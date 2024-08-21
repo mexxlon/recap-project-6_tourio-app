@@ -1,17 +1,30 @@
 import { useRouter } from "next/router";
 import Link from "next/link";
 import useSWR from "swr";
-import Form from "../../../components/Form.js";
-import { StyledLink } from "../../../components/StyledLink.js";
+import Form from "../../../components/Form";
+import { StyledLink } from "../../../components/StyledLink";
 
 export default function EditPage() {
   const router = useRouter();
   const { isReady } = router;
   const { id } = router.query;
-  const { data: place, isLoading, error } = useSWR(`/api/places/${id}`);
+  const { data: place, isLoading, error, mutate } = useSWR(`/api/places/${id}`);
 
-  async function editPlace(place) {
-    console.log("Place edited (but not really...");
+  async function editPlace(updatedPlace) {
+    const response = await fetch(`/api/places/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedPlace),
+    });
+
+    if (response.ok) {
+      mutate();
+      router.push(`/places/${id}`);
+    } else {
+      console.error("Failed to update place");
+    }
   }
 
   if (!isReady || isLoading || error) return <h2>Loading...</h2>;

@@ -5,22 +5,12 @@ export default async function handler(request, response) {
   await dbConnect();
 
   if (request.method === "GET") {
-    const places = await Place.find({});
-    if (places) {
-      response.status(200).json(places);
-    } else {
-      response.status(500).json({ message: "Internal Server Error" });
-    }
+    const places = await Place.find();
+    return response.status(200).json(places);
   } else if (request.method === "POST") {
-    const place = new Place(request.body);
-    const savedPlace = await place.save();
-
-    if (savedPlace) {
-      response.status(201).json(savedPlace);
-    } else {
-      response.status(400).json({ message: "Bad Request" });
-    }
-  } else {
-    response.status(405).json({ message: "Method Not Allowed" });
+    const placeData = request.body;
+    await Place.create(placeData);
+    response.status(201).json({ status: "Place created" });
   }
+  return response.status(405).json({ message: "Method Not Allowed" });
 }
